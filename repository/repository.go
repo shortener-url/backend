@@ -59,7 +59,7 @@ func (r *Repository) ExistsURLShort(shorts []string) (availables []*string, err 
 }
 
 func (r *Repository) FindByParams(key string, startDate, endDate time.Time) ([]URL, error) {
-	query := r.DB.Model(&URL{})
+	query := r.DB.Model(&URL{}).Distinct().Preload("Clicks")
 	if key != "" {
 		query = query.Where("short_url =?", key)
 	}
@@ -70,7 +70,7 @@ func (r *Repository) FindByParams(key string, startDate, endDate time.Time) ([]U
 	}
 	var urls []URL
 
-	err := query.Preload("Clicks").Find(&urls).Error
+	err := query.Find(&urls).Error
 	if err != nil {
 		return nil, err
 	}
