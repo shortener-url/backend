@@ -1,12 +1,17 @@
 package controller
 
 import (
+	"fmt"
 	"net/http"
+	"net/url"
+	"os"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/shortener-url/backend/model"
 	"github.com/shortener-url/backend/service"
+	"gitlab.com/uchile1/helper/helperHttp"
 	"gitlab.com/uchile1/helper/helperLog"
 )
 
@@ -21,45 +26,75 @@ func NewController(service *service.Service) *Controller {
 func (controller *Controller) Shorten(c *gin.Context) {
 	var req model.ShortenRequest
 	if err := c.BindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		helperLog.Logger.Error().Err(err).Msg("invalid request body")
+		c.JSON(http.StatusBadRequest, helperHttp.NewErrorResponse(err.Error()))
 		return
 	}
-	for i := 0; i < 10; i++ {
-		base62Encode()
+	_, err := url.ParseRequestURI(req.OriginalURL)
+	if err != nil {
+		helperLog.Logger.Error().Err(err).Msgf("invalid URL: %s", req.OriginalURL)
+		c.JSON(http.StatusBadRequest, helperHttp.NewErrorResponse(err.Error()))
+		return
 	}
-
-	c.Status(http.StatusNotImplemented)
+	l, _ := strconv.ParseInt(os.Getenv("KEY_LEN"), 10, 0)
+	try, _ := strconv.ParseInt(os.Getenv("KEY_TRY"), 10, 0)
+	short, err := controller.Service.Create(req.OriginalURL, int(try), int(l))
+	if err != nil {
+		helperLog.Logger.Error().Err(err).Msg("failed to create short URL")
+		c.JSON(http.StatusInternalServerError, helperHttp.NewErrorResponse(err.Error()))
+		return
+	}
+	c.JSON(http.StatusOK, helperHttp.NewSuccessResponse(short))
 }
 
 func (controller *Controller) GetUrl(c *gin.Context) {
-	c.Status(http.StatusNotImplemented)
+	key := c.Param("key-short")
+	if key == "" {
+		c.JSON(http.StatusBadRequest, helperHttp.NewErrorResponse(fmt.Errorf("missing key-short parameter").Error()))
+		return
+	}
+	urlLong, err := controller.Service.Get(key, c.ClientIP(), c.Request.UserAgent(), c.GetHeader("Referer"))
+	if err != nil {
+		helperLog.Logger.Error().Err(err).Msg("failed to get URL")
+		c.JSON(http.StatusInternalServerError, helperHttp.NewErrorResponse(err.Error()))
+		return
+	}
+	if urlLong == nil {
+		helperLog.Logger.Error().Err(err).Msg("URL not found")
+		c.JSON(http.StatusInternalServerError, helperHttp.NewErrorResponse("URL not found"))
+		return
+	}
+	c.JSON(http.StatusOK, helperHttp.NewSuccessResponse(urlLong))
 }
 
 func (controller *Controller) Stats(c *gin.Context) {
-	c.Status(http.StatusNotImplemented)
-}
-
-func base62Encode() string {
-	timestamp := time.Now().UnixNano()
-
-	const base = 62
-	const chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!()*+-/<=>@[]^_{|}~"
-
-	var encoded string
-	for timestamp > 0 {
-		remainder := timestamp % base
-		encoded = string(chars[remainder]) + encoded
-		timestamp = timestamp / base
+	key := c.Param("key-short")
+	startDate, existsStart := c.GetQuery("date-start")
+	endDate, existsEnd := c.GetQuery("date-end")
+	if !existsStart || !existsEnd {
+		c.JSON(http.StatusBadRequest, helperHttp.NewErrorResponse(fmt.Errorf("missing date-start or date-end query parameters").Error()))
+		return
 	}
-	aux := encoded
-	if len(encoded) > 5 {
-		encoded = encoded[len(encoded)-5:] // Tomar los últimos 5 caracteres
-	} else if len(encoded) < 5 {
-		// Rellenar con caracteres a la izquierda si la longitud es menor
-		for len(encoded) < 5 {
-			encoded = "0" + encoded
-		}
+	layout := "2006-01-02 15:04:05"
+	startDateParsed, errStart := time.Parse(layout, fmt.Sprintf("%s 00:00:00", startDate))
+	endDateParsed, errEnd := time.Parse(layout, fmt.Sprintf("%s 23:59:59", endDate))
+	if errStart != nil || errEnd != nil {
+		helperLog.Logger.Error().Err(errStart).Err(errEnd).Msg("invalid date format")
+		c.JSON(http.StatusBadRequest, helperHttp.NewErrorResponse(fmt.Errorf("invalid date format").Error()))
+		return
 	}
-	helperLog.Logger.Info().Msgf("URL: %s -> %s", aux, encoded)
-	return encoded
+	const hoursInYear = 366 * 24 // horas en un año (bisiesto)
+	const maxDuration = time.Hour * hoursInYear
+	if endDateParsed.Before(startDateParsed) || endDateParsed.After(time.Now().Add(time.Hour*24)) || endDateParsed.Sub(startDateParsed) > maxDuration {
+		helperLog.Logger.Error().Msgf("invalid date range start: %s, end: %s", startDate, endDate)
+		c.JSON(http.StatusBadRequest, helperHttp.NewErrorResponse(fmt.Errorf("invalid date range start: %s, end: %s", startDate, endDate).Error()))
+		return
+	}
+	urls, err := controller.Service.FindByParams(key, startDateParsed, endDateParsed)
+	if err != nil {
+		helperLog.Logger.Error().Err(err).Msgf("failed to get URL stats by short URL: %s", key)
+		c.JSON(http.StatusInternalServerError, helperHttp.NewErrorResponse(err.Error()))
+		return
+	}
+	c.JSON(http.StatusOK, helperHttp.NewSuccessResponse(urls))
 }
