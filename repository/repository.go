@@ -59,14 +59,19 @@ func (r *Repository) ExistsURLShort(shorts []string) (availables []*string, err 
 }
 
 func (r *Repository) FindByParams(key string, startDate, endDate time.Time) ([]URL, error) {
-	query := r.DB.Model(&URL{}).Distinct().Preload("Clicks")
+	betweenDates := r.DB.Where("1=1")
+	if !startDate.IsZero() && !endDate.IsZero() {
+		betweenDates = r.DB.Where("click.created_at BETWEEN ? AND ?", startDate, endDate)
+	}
+
+	query := r.DB.Model(&URL{}).Distinct().Preload("Clicks", betweenDates)
 	if key != "" {
 		query = query.Where("short_url =?", key)
 	}
 	var c Click
 	if !startDate.IsZero() && !endDate.IsZero() {
 		query = query.Joins(fmt.Sprintf("JOIN %s ON click.url_id = url.id", c.TableName())).
-			Where("click.created_at BETWEEN ? AND ?", startDate, endDate)
+			Where(betweenDates)
 	}
 	var urls []URL
 
