@@ -75,9 +75,9 @@ func (controller *Controller) Stats(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, helperHttp.NewErrorResponse(fmt.Errorf("missing date-start or date-end query parameters").Error()))
 		return
 	}
-	layout := "2006-01-02 15:04:05"
-	startDateParsed, errStart := time.Parse(layout, fmt.Sprintf("%s 00:00:00", startDate))
-	endDateParsed, errEnd := time.Parse(layout, fmt.Sprintf("%s 23:59:59", endDate))
+	layout := "2006/01/02 15:04:05"
+	startDateParsed, errStart := time.ParseInLocation(layout, fmt.Sprintf("%s 00:00:00", startDate), time.Local)
+	endDateParsed, errEnd := time.ParseInLocation(layout, fmt.Sprintf("%s 23:59:59", endDate), time.Local)
 	if errStart != nil || errEnd != nil {
 		helperLog.Logger.Error().Err(errStart).Err(errEnd).Msg("invalid date format")
 		c.JSON(http.StatusBadRequest, helperHttp.NewErrorResponse(fmt.Errorf("invalid date format").Error()))
