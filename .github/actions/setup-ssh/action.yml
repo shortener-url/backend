@@ -1,0 +1,14 @@
+name: 'Setup SSH'
+description: 'Sets up SSH for connecting to remote servers'
+inputs:
+  ssh-private-key:
+    description: 'SSH private key'
+    required: true
+    type: string
+runs:
+  using: 'composite'
+  steps:
+    - name: 'Set up SSH'
+      uses: 'webfactory/ssh-agent@v0.5.3'
+      with:
+        ssh-private-key: ${{ inputs.ssh-private-key }}

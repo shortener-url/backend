@@ -18,7 +18,9 @@ jobs:
       uses: actions/checkout@v2    
 
     - name: Set up SSH
-      uses: ./.github/actions/setup-ssh.yml
+      uses: ./.github/actions/setup-ssh
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
     - name: Extract repository name
       id: extract_repo     
@@ -41,7 +43,9 @@ jobs:
 
     steps:
     - name: Set up SSH
-      uses: ./.github/actions/setup-ssh.yml
+      uses: ./.github/actions/setup-ssh
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
     - name: Build with Docker Compose
       run: |
@@ -60,7 +64,9 @@ jobs:
 
     steps:
     - name: Set up SSH
-      uses: ./.github/actions/setup-ssh.yml
+      uses: ./.github/actions/setup-ssh
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
     - name: Deploy with Docker Compose
       run: |
