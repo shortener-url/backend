@@ -49,10 +49,7 @@ jobs:
     - name: Build with Docker Compose
       run: |
         ssh -o StrictHostKeyChecking=no ${{ env.SSH_CONNECTION }} "
-          cd ${{ env.WORKSPACE_DIR }}/$GITHUB_REPOSITORY &&          
-          export DB_POSTGRES_HOST=${{ secrets.DB_POSTGRES_HOST }} &&
-          export DB_POSTGRES_PASS=${{ secrets.DB_POSTGRES_PASS }} &&
-          export DB_POSTGRES_USER=${{ secrets.DB_POSTGRES_USER }} &&
+          cd ${{ env.WORKSPACE_DIR }}/$GITHUB_REPOSITORY &&                    
           export BRANCH_REPO=main &&
           docker compose build --no-cache
         "
@@ -74,5 +71,8 @@ jobs:
       run: |
         ssh -o StrictHostKeyChecking=no ${{ env.SSH_CONNECTION }} "
           cd ${{ env.WORKSPACE_DIR }}/$GITHUB_REPOSITORY &&
+          export DB_POSTGRES_HOST=${{ secrets.DB_POSTGRES_HOST }} &&
+          export DB_POSTGRES_PASS=${{ secrets.DB_POSTGRES_PASS }} &&
+          export DB_POSTGRES_USER=${{ secrets.DB_POSTGRES_USER }} &&
           docker compose up -d --force-recreate
         "
