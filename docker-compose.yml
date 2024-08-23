@@ -1,0 +1,30 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: ./Dockerfile      
+    image: hugomode/shortener-url-backend:latest  
+    container_name: shortener-url-backend
+    ports:
+      - "8029:8080"
+    environment:
+      TZ: America/Santiago
+      GIN_MODE: release
+      LOG_LEVEL: info
+      #database
+      DB_POSTGRES_HOST: ${DB_POSTGRES_HOST}
+      DB_POSTGRES_PORT: 5432
+      DB_POSTGRES_USER: ${DB_POSTGRES_USER}
+      DB_POSTGRES_PASS: ${DB_POSTGRES_PASS}
+      DB_POSTGRES_NAME: mis_proyectos
+      DB_POSTGRES_SCHEMA: shortener
+      DB_POSTGRES_MAX_OPEN_CONNECTIONS: 10       
+      KEY_LEN: 5
+      KEY_TRY: 10
+    networks:
+      - proxy
+    restart: unless-stopped
+
+networks:
+  proxy:
+    external: true
