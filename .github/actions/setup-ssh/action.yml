@@ -9,6 +9,6 @@ runs:
   using: 'composite'
   steps:
     - name: 'Set up SSH'
-      uses: 'webfactory/ssh-agent@v0.5.3'
+      uses: 'webfactory/ssh-agent@v0.7.0'
       with:
         ssh-private-key: ${{ inputs.ssh-private-key }}

@@ -6,7 +6,7 @@ on:
       - main
 
 env:
-  WORKSPACE_DIR: "~/workspace/shortener-url"
+  WORKSPACE_DIR: "~/workspace"
   SSH_CONNECTION: "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}"
 
 jobs:
@@ -15,27 +15,23 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2    
+      uses: actions/checkout@v3   
 
     - name: Set up SSH
       uses: ./.github/actions/setup-ssh
       with:
         ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-    - name: Extract repository name
-      id: extract_repo     
-      run: echo "repo_name=$(echo $GITHUB_REPOSITORY | cut -d'/' -f2)" >> $GITHUB_ENV
-
     - name: Remove existing directory if it exists and create new one
       run: |
         ssh -o StrictHostKeyChecking=no ${{ env.SSH_CONNECTION }} "
-          rm -rf ${{ env.WORKSPACE_DIR }}/${{ env.repo_name }} &&
-          mkdir -p ${{ env.WORKSPACE_DIR }}/${{ env.repo_name }}
+          rm -rf ${{ env.WORKSPACE_DIR }}/$GITHUB_REPOSITORY &&
+          mkdir -p ${{ env.WORKSPACE_DIR }}/$GITHUB_REPOSITORY
         "
 
     - name: Copy files to remote server
       run: |
-        scp -r -o StrictHostKeyChecking=no "$(pwd)"/* ${{ env.SSH_CONNECTION }}:${{ env.WORKSPACE_DIR }}/${{ env.repo_name }}
+        scp -r -o StrictHostKeyChecking=no "$(pwd)"/* ${{ env.SSH_CONNECTION }}:${{ env.WORKSPACE_DIR }}/$GITHUB_REPOSITORY
 
   build:
     runs-on: ubuntu-latest
@@ -43,7 +39,7 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Set up SSH
       uses: ./.github/actions/setup-ssh
@@ -53,7 +49,7 @@ jobs:
     - name: Build with Docker Compose
       run: |
         ssh -o StrictHostKeyChecking=no ${{ env.SSH_CONNECTION }} "
-          cd ${{ env.WORKSPACE_DIR }}/${{ env.repo_name }} &&          
+          cd ${{ env.WORKSPACE_DIR }}/$GITHUB_REPOSITORY &&          
           export DB_POSTGRES_HOST=${{ secrets.DB_POSTGRES_HOST }} &&
           export DB_POSTGRES_PASS=${{ secrets.DB_POSTGRES_PASS }} &&
           export DB_POSTGRES_USER=${{ secrets.DB_POSTGRES_USER }} &&
@@ -67,7 +63,7 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Set up SSH
       uses: ./.github/actions/setup-ssh
@@ -77,6 +73,6 @@ jobs:
     - name: Deploy with Docker Compose
       run: |
         ssh -o StrictHostKeyChecking=no ${{ env.SSH_CONNECTION }} "
-          cd ${{ env.WORKSPACE_DIR }}/${{ env.repo_name }} &&
+          cd ${{ env.WORKSPACE_DIR }}/$GITHUB_REPOSITORY &&
           docker compose up -d --force-recreate
         "
