@@ -42,6 +42,9 @@ jobs:
     needs: copy_files
 
     steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
     - name: Set up SSH
       uses: ./.github/actions/setup-ssh
       with:
@@ -63,6 +66,9 @@ jobs:
     needs: build
 
     steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
     - name: Set up SSH
       uses: ./.github/actions/setup-ssh
       with:
