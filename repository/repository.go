@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"fmt"
 	"time"
 
 	"gorm.io/gorm"
@@ -68,11 +67,7 @@ func (r *Repository) FindByParams(key string, startDate, endDate time.Time) ([]U
 	if key != "" {
 		query = query.Where("short_url =?", key)
 	}
-	var c Click
-	if !startDate.IsZero() && !endDate.IsZero() {
-		query = query.Joins(fmt.Sprintf("JOIN %s ON click.url_id = url.id", c.TableName())).
-			Where(betweenDates)
-	}
+
 	var urls []URL
 
 	err := query.Find(&urls).Error
