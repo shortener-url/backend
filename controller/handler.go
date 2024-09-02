@@ -61,7 +61,7 @@ func (controller *Controller) GetUrl(c *gin.Context) {
 	}
 	if urlLong == nil {
 		helperLog.Logger.Error().Err(err).Msg("URL not found")
-		c.JSON(http.StatusInternalServerError, helperHttp.NewErrorResponse("URL not found"))
+		c.JSON(http.StatusNotFound, helperHttp.NewErrorResponse("URL not found"))
 		return
 	}
 	c.JSON(http.StatusOK, helperHttp.NewSuccessResponse(urlLong))

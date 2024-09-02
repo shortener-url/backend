@@ -42,7 +42,7 @@ func (service *Service) Get(shortURL string, ip, browser, referer string) (*stri
 		return nil, err
 	}
 	if url == nil {
-		return nil, fmt.Errorf("url not found")
+		return nil, nil
 	}
 	fmt.Println("antes de agregar click")
 	go func() {
