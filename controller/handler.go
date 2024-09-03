@@ -89,6 +89,10 @@ func (controller *Controller) UpdateShortURL(c *gin.Context) {
 	}
 	var update URLUpdateRequest
 	c.ShouldBindBodyWithJSON(&update)
+	if len(update.ShortURLNew) < 2 || len(update.ShortURLNew) > 10 {
+		c.JSON(http.StatusBadRequest, helperHttp.NewErrorResponse(fmt.Errorf("short URL must be between 2 and 10 characters long").Error()))
+		return
+	}
 	urlNew, err := controller.Service.UpdateShortURL(update.ShortURLOld, update.ShortURLNew)
 	if err != nil {
 		helperLog.Logger.Error().Err(err).Msg("failed to update short URL")
