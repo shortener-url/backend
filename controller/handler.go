@@ -11,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/shortener-url/backend/model"
 	"github.com/shortener-url/backend/service"
+	"github.com/shortener-url/backend/utils"
 	"gitlab.com/uchile1/helper/helperHttp"
 	"gitlab.com/uchile1/helper/helperLog"
 )
@@ -91,6 +92,10 @@ func (controller *Controller) UpdateShortURL(c *gin.Context) {
 	c.ShouldBindBodyWithJSON(&update)
 	if len(update.ShortURLNew) < 2 || len(update.ShortURLNew) > 10 {
 		c.JSON(http.StatusBadRequest, helperHttp.NewErrorResponse(fmt.Errorf("short URL must be between 2 and 10 characters long").Error()))
+		return
+	}
+	if !utils.IsValidKey(update.ShortURLNew) {
+		c.JSON(http.StatusBadRequest, helperHttp.NewErrorResponse("short URL can only contain alphanumeric characters"))
 		return
 	}
 	urlNew, err := controller.Service.UpdateShortURL(update.ShortURLOld, update.ShortURLNew)

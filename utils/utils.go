@@ -1,16 +1,18 @@
 package utils
 
 import (
+	"regexp"
 	"time"
 
 	"gitlab.com/uchile1/helper/helperLog"
 )
 
+const chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
 func Base62Encode(keyLen int) string {
 	timestamp := time.Now().UnixNano()
 
 	const base = 62
-	const chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!()*+-/<=>@[]^_{|}~"
 
 	var encoded string
 	for timestamp > 0 {
@@ -29,4 +31,8 @@ func Base62Encode(keyLen int) string {
 	}
 	helperLog.Logger.Info().Msgf("URL: %s -> %s", aux, encoded)
 	return encoded
+}
+
+func IsValidKey(key string) bool {
+	return regexp.MustCompile(chars).MatchString(key)
 }
