@@ -22,7 +22,7 @@ func (service *Service) Create(url string, try, keyLen int) (*string, error) {
 	for i := 0; i < int(try); i++ {
 		candidates = append(candidates, utils.Base62Encode(keyLen))
 	}
-	availables, err := service.Repository.ExistsURLShort(candidates)
+	availables, err := service.Repository.ExistsShortURL(candidates)
 	if err != nil {
 		return nil, err
 	}
@@ -34,6 +34,33 @@ func (service *Service) Create(url string, try, keyLen int) (*string, error) {
 		return nil, err
 	}
 	return availables[0], nil
+}
+
+func (service *Service) ExistsShortURL(shortURL string) (bool, error) {
+	urlsFound, err := service.Repository.ExistsShortURL([]string{shortURL})
+	if err != nil {
+		return true, err
+	}
+	//si 'short url' está disponible, devuelve el mismo 'short url'
+	if len(urlsFound) == 1 {
+		return false, nil
+	}
+	return true, nil
+}
+
+func (service *Service) UpdateShortURL(shortURLOld, shortURLNew string) (*string, error) {
+	exists, err := service.ExistsShortURL(shortURLNew)
+	if err != nil {
+		return nil, err
+	}
+	if exists {
+		return nil, fmt.Errorf("URL already exists")
+	}
+	err = service.Repository.UpdateShortURL(shortURLOld, shortURLNew)
+	if err != nil {
+		return nil, err
+	}
+	return &shortURLNew, nil
 }
 
 func (service *Service) Get(shortURL string, ip, browser, referer string) (*string, error) {

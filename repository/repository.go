@@ -36,9 +36,13 @@ func (r *Repository) AddClick(idURL uint, ip, browser, referer string) error {
 	return r.DB.Create(&click).Error
 }
 
-func (r *Repository) ExistsURLShort(shorts []string) (availables []*string, err error) {
+func (r *Repository) UpdateShortURL(shortURLOld, shortURLNew string) error {
+	return r.DB.Where(&URL{ShortURL: shortURLOld}).Updates(&URL{ShortURL: shortURLNew}).Error
+}
+
+func (r *Repository) ExistsShortURL(shorts []string) (availables []*string, err error) {
 	var urls []URL
-	err = r.DB.Find(&urls).Where("short_url in ?", shorts).Error
+	err = r.DB.Where("short_url in ?", shorts).Find(&urls).Error
 	if err != nil {
 		return nil, err
 	}

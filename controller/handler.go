@@ -67,6 +67,37 @@ func (controller *Controller) GetUrl(c *gin.Context) {
 	c.JSON(http.StatusOK, helperHttp.NewSuccessResponse(urlLong))
 }
 
+func (controller *Controller) ExistsShortURL(c *gin.Context) {
+	key := c.Param("key-short")
+	if key == "" {
+		c.JSON(http.StatusBadRequest, helperHttp.NewErrorResponse(fmt.Errorf("missing key-short parameter").Error()))
+		return
+	}
+	exists, err := controller.Service.ExistsShortURL(key)
+	if err != nil {
+		helperLog.Logger.Error().Err(err).Msg("failed to check URL existence")
+		c.JSON(http.StatusInternalServerError, helperHttp.NewErrorResponse(err.Error()))
+		return
+	}
+	c.JSON(http.StatusOK, helperHttp.NewSuccessResponse(exists))
+}
+
+func (controller *Controller) UpdateShortURL(c *gin.Context) {
+	type URLUpdateRequest struct {
+		ShortURLNew string `json:"short_url_new" binding:"required"`
+		ShortURLOld string `json:"short_url_old" binding:"required"`
+	}
+	var update URLUpdateRequest
+	c.ShouldBindBodyWithJSON(&update)
+	urlNew, err := controller.Service.UpdateShortURL(update.ShortURLOld, update.ShortURLNew)
+	if err != nil {
+		helperLog.Logger.Error().Err(err).Msg("failed to update short URL")
+		c.JSON(http.StatusInternalServerError, helperHttp.NewErrorResponse(err.Error()))
+		return
+	}
+	c.JSON(http.StatusOK, helperHttp.NewSuccessResponse(urlNew))
+}
+
 func (controller *Controller) Stats(c *gin.Context) {
 	key := c.Param("key-short")
 	startDate, existsStart := c.GetQuery("date-start")

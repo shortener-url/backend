@@ -49,6 +49,8 @@ func main() {
 	group := r.Group("/api/v1/")
 	group.POST("/shorten", controller.Shorten)
 	group.GET("/:key-short", controller.GetUrl)
+	group.GET("/:key-short/exists", controller.ExistsShortURL)
+	group.PATCH("/shorten", controller.UpdateShortURL)
 	group.GET("/:key-short/stats", controller.Stats)
 	group.GET("/stats", controller.Stats)
 	localIP, err := helperCommon.GetLocalIP()

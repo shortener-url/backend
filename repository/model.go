@@ -10,6 +10,7 @@ type URL struct {
 	ShortURL    string    `json:"short_url"`
 	Clicks      []Click   `json:"clicks" gorm:"foreignKey:URLID;references:ID"`
 	CreatedAt   time.Time `json:"created_at" gorm:"<-:create"`
+	UpdatedAt   time.Time `json:"updated_at"`
 }
 
 func (URL) TableName() string {
