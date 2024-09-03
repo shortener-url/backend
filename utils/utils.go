@@ -34,5 +34,6 @@ func Base62Encode(keyLen int) string {
 }
 
 func IsValidKey(key string) bool {
-	return regexp.MustCompile(chars).MatchString(key)
+	pattern := "^[" + chars + "]+$"
+	return regexp.MustCompile(pattern).MatchString(key)
 }
