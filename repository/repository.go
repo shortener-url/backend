@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"fmt"
 	"time"
 
 	"gorm.io/gorm"
@@ -37,7 +38,15 @@ func (r *Repository) AddClick(idURL uint, ip, browser, referer string) error {
 }
 
 func (r *Repository) UpdateShortURL(shortURLOld, shortURLNew string) error {
-	return r.DB.Where(&URL{ShortURL: shortURLOld}).Updates(&URL{ShortURL: shortURLNew}).Error
+	oneHourAgo := time.Now().Add(-1 * time.Hour)
+	tx := r.DB.Where("short_url = ? AND created_at > ?", shortURLOld, oneHourAgo).Updates(&URL{ShortURL: shortURLNew})
+	if tx.Error != nil {
+		return tx.Error
+	}
+	if tx.RowsAffected == 0 {
+		return fmt.Errorf("no short URL found to update OR short URL was not created within the last hour")
+	}
+	return nil
 }
 
 func (r *Repository) ExistsShortURL(shorts []string) (availables []*string, err error) {
