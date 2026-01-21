@@ -1,9 +1,214 @@
 basePath: /api/v1
+definitions:
+  github_com_shortener-url_backend_internal_core_domain.ShortenRequest:
+    properties:
+      original_url:
+        example: https://www.google.com
+        type: string
+    type: object
+  github_com_shortener-url_backend_internal_core_domain.URLUpdateRequest:
+    properties:
+      short_url_new:
+        example: newkey
+        type: string
+      short_url_old:
+        example: oldkey
+        type: string
+    type: object
+  helperHttp.Response:
+    properties:
+      data: {}
+      error_code:
+        type: string
+      message:
+        type: string
+      status:
+        type: string
+    type: object
 host: localhost:8080
 info:
   contact: {}
   description: acortador de URLs
   title: Shortener URL API
   version: "1.0"
-paths: {}
+paths:
+  /{key-short}:
+    get:
+      description: Redirects or returns the original URL for a given short key
+      parameters:
+      - description: Short Key
+        in: path
+        name: key-short
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helperHttp.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helperHttp.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/helperHttp.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helperHttp.Response'
+      summary: Get original URL
+      tags:
+      - URL
+  /{key-short}/exists:
+    get:
+      description: Verifies if a specific short key is already in use
+      parameters:
+      - description: Short Key
+        in: path
+        name: key-short
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helperHttp.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helperHttp.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helperHttp.Response'
+      summary: Check if short URL exists
+      tags:
+      - URL
+  /{key-short}/stats:
+    get:
+      description: Retrieves statistics (clicks) for a specific short key within a
+        date range
+      parameters:
+      - description: Short Key (optional for general stats)
+        in: path
+        name: key-short
+        type: string
+      - description: Start Date (YYYY/MM/DD)
+        in: query
+        name: date-start
+        required: true
+        type: string
+      - description: End Date (YYYY/MM/DD)
+        in: query
+        name: date-end
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helperHttp.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helperHttp.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helperHttp.Response'
+      summary: Get URL stats
+      tags:
+      - Stats
+  /shorten:
+    patch:
+      consumes:
+      - application/json
+      description: Changes the short key of an existing URL
+      parameters:
+      - description: Update Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_shortener-url_backend_internal_core_domain.URLUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helperHttp.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helperHttp.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helperHttp.Response'
+      summary: Update short URL key
+      tags:
+      - URL
+    post:
+      consumes:
+      - application/json
+      description: Creates a shortened URL from a long URL
+      parameters:
+      - description: Shorten Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_shortener-url_backend_internal_core_domain.ShortenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helperHttp.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helperHttp.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helperHttp.Response'
+      summary: Shorten a URL
+      tags:
+      - URL
+  /stats:
+    get:
+      description: Retrieves statistics (clicks) for a specific short key within a
+        date range
+      parameters:
+      - description: Start Date (YYYY/MM/DD)
+        in: query
+        name: date-start
+        required: true
+        type: string
+      - description: End Date (YYYY/MM/DD)
+        in: query
+        name: date-end
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helperHttp.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helperHttp.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helperHttp.Response'
+      summary: Get URL stats
+      tags:
+      - Stats
 swagger: "2.0"

@@ -8,5 +8,313 @@
     },
     "host": "localhost:8080",
     "basePath": "/api/v1",
-    "paths": {}
+    "paths": {
+        "/shorten": {
+            "post": {
+                "description": "Creates a shortened URL from a long URL",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "URL"
+                ],
+                "summary": "Shorten a URL",
+                "parameters": [
+                    {
+                        "description": "Shorten Request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_shortener-url_backend_internal_core_domain.ShortenRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/helperHttp.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helperHttp.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helperHttp.Response"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "Changes the short key of an existing URL",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "URL"
+                ],
+                "summary": "Update short URL key",
+                "parameters": [
+                    {
+                        "description": "Update Request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_shortener-url_backend_internal_core_domain.URLUpdateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/helperHttp.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helperHttp.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helperHttp.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/stats": {
+            "get": {
+                "description": "Retrieves statistics (clicks) for a specific short key within a date range",
+                "tags": [
+                    "Stats"
+                ],
+                "summary": "Get URL stats",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Start Date (YYYY/MM/DD)",
+                        "name": "date-start",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "End Date (YYYY/MM/DD)",
+                        "name": "date-end",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/helperHttp.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helperHttp.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helperHttp.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/{key-short}": {
+            "get": {
+                "description": "Redirects or returns the original URL for a given short key",
+                "tags": [
+                    "URL"
+                ],
+                "summary": "Get original URL",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Short Key",
+                        "name": "key-short",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/helperHttp.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helperHttp.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/helperHttp.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helperHttp.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/{key-short}/exists": {
+            "get": {
+                "description": "Verifies if a specific short key is already in use",
+                "tags": [
+                    "URL"
+                ],
+                "summary": "Check if short URL exists",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Short Key",
+                        "name": "key-short",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/helperHttp.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helperHttp.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helperHttp.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/{key-short}/stats": {
+            "get": {
+                "description": "Retrieves statistics (clicks) for a specific short key within a date range",
+                "tags": [
+                    "Stats"
+                ],
+                "summary": "Get URL stats",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Short Key (optional for general stats)",
+                        "name": "key-short",
+                        "in": "path"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Start Date (YYYY/MM/DD)",
+                        "name": "date-start",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "End Date (YYYY/MM/DD)",
+                        "name": "date-end",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/helperHttp.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helperHttp.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helperHttp.Response"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "github_com_shortener-url_backend_internal_core_domain.ShortenRequest": {
+            "type": "object",
+            "properties": {
+                "original_url": {
+                    "type": "string",
+                    "example": "https://www.google.com"
+                }
+            }
+        },
+        "github_com_shortener-url_backend_internal_core_domain.URLUpdateRequest": {
+            "type": "object",
+            "properties": {
+                "short_url_new": {
+                    "type": "string",
+                    "example": "newkey"
+                },
+                "short_url_old": {
+                    "type": "string",
+                    "example": "oldkey"
+                }
+            }
+        },
+        "helperHttp.Response": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "error_code": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        }
+    }
 }

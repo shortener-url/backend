@@ -4,9 +4,9 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
-	"github.com/shortener-url/backend/controller"
-	"github.com/shortener-url/backend/repository"
-	"github.com/shortener-url/backend/service"
+	"github.com/shortener-url/backend/internal/adapters/handlers"
+	"github.com/shortener-url/backend/internal/adapters/repositories"
+	"github.com/shortener-url/backend/internal/core/services"
 	"gorm.io/gorm"
 
 	_ "github.com/shortener-url/backend/docs"
@@ -36,23 +36,27 @@ func main() {
 		helperLog.Logger.Panic().AnErr("error al crear el esquema!", err)
 	}
 	// AutoMigrate ejecutará las migraciones automáticamente
-	if err := db.AutoMigrate(&repository.URL{}, &repository.Click{}); err != nil {
+	// Note: Using the migration structs from the repository implementation
+	if err := db.AutoMigrate(&repositories.PostgresURL{}, &repositories.PostgresClick{}); err != nil {
 		helperLog.Logger.Panic().AnErr("error al ejecutar automigrate!", err)
 	}
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080" // Usa el puerto 8080 por defecto si no está definido
 	}
-	repository := repository.NewRepository(db)
-	service := service.NewService(repository)
-	controller := controller.NewController(service)
+
+	repo := repositories.NewPostgresRepository(db)
+	svc := services.NewURLService(repo)
+	handler := handlers.NewHTTPHandler(svc)
+
 	group := r.Group("/api/v1/")
-	group.POST("/shorten", controller.Shorten)
-	group.GET("/:key-short", controller.GetUrl)
-	group.GET("/:key-short/exists", controller.ExistsShortURL)
-	group.PATCH("/shorten", controller.UpdateShortURL)
-	group.GET("/:key-short/stats", controller.Stats)
-	group.GET("/stats", controller.Stats)
+	group.POST("/shorten", handler.Shorten)
+	group.GET("/:key-short", handler.GetUrl)
+	group.GET("/:key-short/exists", handler.ExistsShortURL)
+	group.PATCH("/shorten", handler.UpdateShortURL)
+	group.GET("/:key-short/stats", handler.Stats)
+	group.GET("/stats", handler.Stats)
+
 	localIP, err := helperCommon.GetLocalIP()
 	if err != nil {
 		localIP = "localhost"
