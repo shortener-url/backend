@@ -11,7 +11,7 @@ WORKDIR /app/repo_remote
 
 # Descarga las dependencias y compila la aplicación
 RUN go mod tidy
-RUN GOOS=linux go build -o /app/myapp
+RUN GOOS=linux go build -o /app/myapp cmd/main.go
 
 FROM alpine:latest
 
