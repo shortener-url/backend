@@ -111,7 +111,7 @@ func (r *postgresRepository) FindByParams(key string, startDate, endDate time.Ti
 		if !startDate.IsZero() && !endDate.IsZero() {
 			db = db.Where("created_at BETWEEN ? AND ?", startDate, endDate)
 		}
-		return db.Order("created_at DESC")
+		return db.Order("created_at ASC")
 	})
 	if key != "" {
 		query = query.Where("short_url =?", key)
