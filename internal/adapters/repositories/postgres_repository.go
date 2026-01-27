@@ -107,12 +107,12 @@ func (r *postgresRepository) ExistsShortURL(shorts []string) (availables []*stri
 }
 
 func (r *postgresRepository) FindByParams(key string, startDate, endDate time.Time) ([]domain.URL, error) {
-	betweenDates := r.db.Where("1=1")
-	if !startDate.IsZero() && !endDate.IsZero() {
-		betweenDates = r.db.Where("created_at BETWEEN ? AND ?", startDate, endDate)
-	}
-
-	query := r.db.Model(&PostgresURL{}).Distinct().Preload("Clicks", betweenDates)
+	query := r.db.Model(&PostgresURL{}).Distinct().Preload("Clicks", func(db *gorm.DB) *gorm.DB {
+		if !startDate.IsZero() && !endDate.IsZero() {
+			db = db.Where("created_at BETWEEN ? AND ?", startDate, endDate)
+		}
+		return db.Order("created_at DESC")
+	})
 	if key != "" {
 		query = query.Where("short_url =?", key)
 	}
