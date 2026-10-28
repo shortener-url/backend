@@ -69,6 +69,8 @@ Welcome to the **URL Shortener Backend**, a robust and efficient API service bui
 Once the server is running, you can access the interactive Swagger UI at:
 [http://localhost:8080/swagger/index.html](http://localhost:8080/swagger/index.html)
 
+The database health check is available at `GET /health`. It returns `200` when PostgreSQL is reachable and `503` otherwise.
+
 ## 🐳 Docker Deployment
 
 You can run the service using Docker and Docker Compose:
